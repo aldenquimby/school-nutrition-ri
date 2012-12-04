@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Eat Healthy!</title>
+        <!-- stylesheets -->
+        <link type="text/css" rel="stylesheet" href="styles/bootstrap/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="styles/bootstrap/bootstrap-responsive.min.css" />
+        <link type="text/css" rel="stylesheet" href="styles/DT_bootstrap.css" />
+        <style>
+        	.container {
+        		padding-top:30px;
+        	}
+        	.dataTables_scroll {
+        		padding-bottom: 10px;
+        	}
+        </style>
+        <!-- scripts -->
+        <script type="text/javascript" src="scripts/jquery-1.8.3.min.js"></script>
+        <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="scripts/jquery.csv.min.js"></script>
+        <script type="text/javascript" src="scripts/DT_bootstrap.js"></script>
+        <script type="text/javascript">
+        	$(function(){
+        		
+        		var csvUrl = 'https://docs.google.com/spreadsheet/pub?key=0AhgeWcbPrqvOdGNqckRxd2FieXhZZFVSU3JvM1hHYkE&single=true&gid=0&output=csv';
+    			
+    			$.get(csvUrl, function(data) {
+    				var table = $('#bootstrapDt');
+    				parseCsvIntoTable(data, table);
+    				setupBootstrapDatatable(table);
+    			});
+
+        	});
+
+			function parseCsvIntoTable(data, table) {
+				var parsed = $.csv()(data);
+
+				var tbody = table.find('tbody');
+				var thead = table.find('thead');
+
+				$(parsed).each(function(i, e){
+
+					var foodType = e[0];
+					var productName = e[1];
+					var companyName = e[2];
+					var distributorCode = e[3];
+
+					if (i == 0) {
+						thead.append('<tr>'
+							+ '<th>' + foodType + '</th>'
+							+ '<th>' + productName + '</th>'
+							+ '<th>' + companyName + '</th>'
+							+ '<th>' + distributorCode + '</th>'
+							+ '</tr>');
+					} else {
+						tbody.append('<tr>'
+							+ '<td>' + foodType + '</td>'
+							+ '<td>' + productName + '</td>'
+							+ '<td>' + companyName + '</td>'
+							+ '<td>' + distributorCode + '</td>'
+							+ '</tr>');
+					}
+				});
+			}
+
+			function setupBootstrapDatatable(table) {
+				table.dataTable({
+					"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
+					"sPaginationType": "bootstrap",
+					"oLanguage": {
+						"sLengthMenu": "_MENU_ records per page"
+					},
+					"sScrollY": "370px",
+					"iDisplayLength": 25
+				});	
+			}
+        </script>
+    </head>
+    <body>
+        <div class="container">
+        	<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="bootstrapDt">
+				<thead>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+	</body>
+</html>
