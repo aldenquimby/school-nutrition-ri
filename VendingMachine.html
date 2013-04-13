@@ -4,12 +4,12 @@
         <meta charset="utf-8">
         <title>Eat Healthy!</title>
         <!-- stylesheets -->
-        <link type="text/css" rel="stylesheet" href="styles/bootstrap/bootstrap.min.css" />
-        <link type="text/css" rel="stylesheet" href="styles/bootstrap/bootstrap-responsive.min.css" />
-        <link type="text/css" rel="stylesheet" href="styles/DT_bootstrap.css" />
+        <link type="text/css" rel="stylesheet" href="styles/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="styles/DT_bootstrap.min.css" />
         <style>
         	.container {
         		padding-top:30px;
+        		width: 940px; 
         	}
         	.dataTables_scroll {
         		padding-bottom: 10px;
@@ -20,62 +20,106 @@
         <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
         <script type="text/javascript" src="scripts/jquery.dataTables.min.js"></script>
         <script type="text/javascript" src="scripts/jquery.csv.min.js"></script>
-        <script type="text/javascript" src="scripts/DT_bootstrap.js"></script>
+        <script type="text/javascript" src="scripts/DT_bootstrap.min.js"></script>
         <script type="text/javascript">
-        	$(function(){
-        		
+
+        	// on page load, get data from google and create our table
+        	$(function() {
+
+				// google spreadsheet url where we can get the data
         		var csvUrl = 'https://docs.google.com/spreadsheet/pub?key=0AhgeWcbPrqvOdGNqckRxd2FieXhZZFVSU3JvM1hHYkE&single=true&gid=0&output=csv';
     			
-    			$.get(csvUrl, function(data) {
-    				var table = $('#bootstrapDt');
-    				parseCsvIntoTable(data, table);
-    				setupBootstrapDatatable(table);
-    			});
-
+    			// make an ajax GET request to google
+    			$.get(csvUrl, onSuccessFromGoogle);
         	});
 
-			function parseCsvIntoTable(data, table) {
-				var parsed = $.csv()(data);
+        	// this gets hit when google returns our data as a csv
+        	function onSuccessFromGoogle(dataAsCsv) {
+        		
+        		// element that will hold our data table 
+				var table = $('#bootstrapDt');
 
-				var tbody = table.find('tbody');
-				var thead = table.find('thead');
+				// turn csv into javascript table (array of arrays)
+				var parsedData = $.csv()(dataAsCsv);
 
-				$(parsed).each(function(i, e){
+				// fill html table with our data
+				fillHtmlTable(parsedData, table);
 
-					var foodType = e[0];
-					var productName = e[1];
-					var companyName = e[2];
-					var distributorCode = e[3];
+				// initialize datatable to allow sorting, searching, etc.
+				initializeDatatable(table);
+        	}
 
-					if (i == 0) {
-						thead.append('<tr>'
-							+ '<th>' + foodType + '</th>'
-							+ '<th>' + productName + '</th>'
-							+ '<th>' + companyName + '</th>'
-							+ '<th>' + distributorCode + '</th>'
-							+ '</tr>');
-					} else {
-						tbody.append('<tr>'
-							+ '<td>' + foodType + '</td>'
-							+ '<td>' + productName + '</td>'
-							+ '<td>' + companyName + '</td>'
-							+ '<td>' + distributorCode + '</td>'
-							+ '</tr>');
+        	// fill the html table with data
+        	function fillHtmlTable(dataAsTable, htmlTable) {
+
+    			// find the head and body of our html table
+				var thead = htmlTable.find('thead');
+				var tbody = htmlTable.find('tbody');
+
+				// loop through our data and stick it in the html table
+        		$(dataAsTable).each(function (index, row) {
+
+    				// we know the columns of our data because we control the google spreadsheet
+					var foodType = row[0];
+					var productName = row[1];
+					var companyName = row[2];
+					var distributorCode = row[3];
+					var id = row[4];
+					var size = row[5];
+					var flavor = row[6];
+					var type = row[7];
+					var guidelinesGroup = row[8];
+
+					// if index is 0, we're on the header row
+					if (index == 0) {
+						var htmlRow = '<tr>'
+										+ '<th>' + foodType + '</th>'
+										+ '<th>' + productName + '</th>'
+										+ '<th>' + companyName + '</th>'
+										+ '<th>' + distributorCode + '</th>'
+									+ '</tr>';
+						thead.append(htmlRow);
+					} 
+					else { // otherwise we're on the actual data
+
+						// if we know the product size, display it with the name
+						var trimmedSize = $.trim(size);
+						var sizeToDisplay = trimmedSize != '' && trimmedSize.indexOf('Not Specified') == -1
+								? ' (' + trimmedSize + ')'
+								: '';
+
+						var htmlRow = '<tr>'
+										+ '<td>' + foodType + '</td>'
+										+ '<td>' + productName + sizeToDisplay + '</td>'
+										+ '<td>' + companyName + '</td>'
+										+ '<td>' + distributorCode + '</td>'
+									+ '</tr>';
+
+						tbody.append(htmlRow);
 					}
-				});
-			}
+        		});
+        	}
 
-			function setupBootstrapDatatable(table) {
+			// turn html table into a datatable 
+			function initializeDatatable(table) {
+
 				table.dataTable({
-					"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
+					"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>", // specifies location of datatable controls
 					"sPaginationType": "bootstrap",
 					"oLanguage": {
-						"sLengthMenu": "_MENU_ records per page"
+						"sLengthMenu": "_MENU_ records per page" // pagination display
 					},
-					"sScrollY": "370px",
-					"iDisplayLength": 25
+					"sScrollY": "370px",  // max height of results
+					"iDisplayLength": 25, // results per page
+					"aoColumns": [ // columns specific info, like widths, searchability, visibility, etc.
+						{ "sWidth": "15%" },
+						{ "sWidth": "35%" },
+						{ "sWidth": "25%" },
+						{ "sWidth": "25%" },
+				    ]
 				});	
 			}
+
         </script>
     </head>
     <body>
