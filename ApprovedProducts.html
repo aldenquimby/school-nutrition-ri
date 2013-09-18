@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <title>Eat Healthy!</title>
         <!-- stylesheets -->
-        <link type="text/css" rel="stylesheet" href="stylesheets/bootstrap.min.css" />
-        <link type="text/css" rel="stylesheet" href="stylesheets/DT_bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="styles/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="styles/DT_bootstrap.min.css" />
         <style>
         	.container {
         		width: 940px; 
@@ -18,130 +18,94 @@
         	}
         </style>
         <!-- scripts -->
-        <script type="text/javascript" src="javascripts/jquery-1.8.3.min.js"></script>
-        <script type="text/javascript" src="javascripts/bootstrap.min.js"></script>
-        <script type="text/javascript" src="javascripts/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="javascripts/jquery.csv.min.js"></script>
-        <script type="text/javascript" src="javascripts/DT_bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="scripts/DT_bootstrap.min.js"></script>
         <script type="text/javascript">
 
         	// on page load, get data from google and create our table
         	$(function() {
 
 				// google spreadsheet urls where we can get the data
-        		var vendingMachineUrl = 'https://docs.google.com/spreadsheet/pub?key=0AhgeWcbPrqvOdGNqckRxd2FieXhZZFVSU3JvM1hHYkE&single=true&gid=0&output=csv';
+        		var vendingMachineUrl = 'https://spreadsheets.google.com/feeds/list/0AhgeWcbPrqvOdGNqckRxd2FieXhZZFVSU3JvM1hHYkE/od6/public/values?alt=json-in-script&callback=?';
         		
-        		var wholeGrainsUrl = 'https://docs.google.com/spreadsheet/pub?key=0AhgeWcbPrqvOdGgxbkJYdUVRVkJHSHFQNlVkUnJrN2c&single=true&gid=0&output=csv';
+    			var wholeGrainsUrl = 'https://spreadsheets.google.com/feeds/list/0AhgeWcbPrqvOdGgxbkJYdUVRVkJHSHFQNlVkUnJrN2c/od6/public/values?alt=json-in-script&callback=?';
 
     			// make an ajax GET request to google
-    			$.get(vendingMachineUrl, function (dataAsCsv) {
-
-					// this gets run when the data comes back from google
-
+				$.getJSON(vendingMachineUrl, function (data) {
 					var table = $('#vendingMachinesDt'); // element that will hold our data table 
-					var parsedData = $.csv()(dataAsCsv); // turn csv into javascript table (array of arrays)
-					vendingMachinesHtmlTable(parsedData, table); // fill html table with our data
+					vendingMachinesHtmlTable(data.feed.entry, table); // fill html table with our data
 					vendingMachinesDataTable(table); // initialize datatable to allow sorting, searching, etc.
-
-    			});
+			    });
 
     			// make an ajax GET request to google
-    			$.get(wholeGrainsUrl, function (dataAsCsv) {
-
-					// this gets run when the data comes back from google
-
+				$.getJSON(wholeGrainsUrl, function (data) {
 					var table = $('#wholeGrainsDt'); // element that will hold our data table 
-					var parsedData = $.csv()(dataAsCsv); // turn csv into javascript table (array of arrays)
-					wholeGrainsHtmlTable(parsedData, table); // fill html table with our data
+					wholeGrainsHtmlTable(data.feed.entry, table); // fill html table with our data
 					wholeGrainsDataTable(table); // initialize datatable to allow sorting, searching, etc.
-					
-    			});
+			    });
+
         	});
 
         	// fill the html table with data
-        	function vendingMachinesHtmlTable(dataAsTable, htmlTable) {
+        	function vendingMachinesHtmlTable(dataFromGoogle, htmlTable) {
 
     			// find the head and body of our html table
 				var thead = htmlTable.find('thead');
 				var tbody = htmlTable.find('tbody');
 
 				// loop through our data and stick it in the html table
-        		$(dataAsTable).each(function (index, row) {
+        		$(dataFromGoogle).each(function (index, row) {
 
-    				// we know the columns of our data because we control the google spreadsheet
-					var foodType = row[0];
-					var productName = row[1];
-					var companyName = row[2];
-					var distributorCode = row[3];
-					var id = row[4];
-					var size = row[5];
-					var flavor = row[6];
-					var type = row[7];
-					var guidelinesGroup = row[8];
+    				// pick out the columns we want to use
+					var foodType = row.gsx$foodtype.$t;
+					var productName = row.gsx$productname.$t;
+					var companyName = row.gsx$companyname.$t;
+					var distributorCode = row.gsx$distributorcode.$t;
+					var size = row.gsx$size.$t;
 
-					// if index is 0, we're on the header row
-					if (index == 0) {
-						var htmlRow = '<tr>'
-										+ '<th>' + foodType + '</th>'
-										+ '<th>' + productName + '</th>'
-										+ '<th>' + companyName + '</th>'
-										+ '<th>' + distributorCode + '</th>'
-									+ '</tr>';
-						thead.append(htmlRow);
-					} 
-					else { // otherwise we're on the actual data
-						var htmlRow = '<tr>'
-										+ '<td>' + foodType + '</td>'
-										+ '<td>' + productName + getSizeToDisplay(size) + '</td>'
-										+ '<td>' + companyName + '</td>'
-										+ '<td>' + distributorCode + '</td>'
-									+ '</tr>';
-						tbody.append(htmlRow);
-					}
+					var htmlRow = '<tr>'
+									+ '<td>' + foodType + '</td>'
+									+ '<td>' + productName + getSizeToDisplay(size) + '</td>'
+									+ '<td>' + companyName + '</td>'
+									+ '<td>' + distributorCode + '</td>'
+								+ '</tr>';
+
+					tbody.append(htmlRow);
         		});
         	}
 
-        	function wholeGrainsHtmlTable(dataAsTable, htmlTable) {
+        	function wholeGrainsHtmlTable(dataFromGoogle, htmlTable) {
 
     			// find the head and body of our html table
-				var thead = htmlTable.find('thead');
 				var tbody = htmlTable.find('tbody');
 
 				// loop through our data and stick it in the html table
-        		$(dataAsTable).each(function (index, row) {
+        		$(dataFromGoogle).each(function (index, row) {
 
-    				// we know the columns of our data because we control the google spreadsheet
-					var foodType = row[0];
-					var productName = row[1];
-					var wholeGrainStatus = row[2];
-					var companyName = row[3];
-					var distributorCode = row[4];
-					var id = row[5];
-					var size = row[6];
-					var flavor = row[7];
+    				// pick out the columns we want to use
+					var foodType = row.gsx$foodtype.$t;
+					var wholeGrainStatus = row.gsx$wholegrainstatus.$t;
+					var productName = row.gsx$productname.$t;
+					var companyName = row.gsx$companyname.$t;
+					var distributorCode = row.gsx$distributorcode.$t;
+					var size = row.gsx$packagesize.$t;
 
-					// if index is 0, we're on the header row
-					if (index == 0) {
-						var htmlRow = '<tr>'
-										+ '<th>' + foodType + '</th>'
-										+ '<th>' + productName + '</th>'
-										+ '<th>' + wholeGrainStatus + '</th>'
-										+ '<th>' + companyName + '</th>'
-										+ '<th>' + distributorCode + '</th>'
-									+ '</tr>';
-						thead.append(htmlRow);
-					} 
-					else { // otherwise we're on the actual data
-						var htmlRow = '<tr>'
-										+ '<td>' + foodType + '</td>'
-										+ '<td>' + productName + getSizeToDisplay(size) + '</td>'
-										+ '<td>' + wholeGrainStatus + '</td>'
-										+ '<td>' + companyName + '</td>'
-										+ '<td>' + distributorCode + '</td>'
-									+ '</tr>';
-						tbody.append(htmlRow);
-					}
+					var htmlRow = '<tr>'
+									+ '<td>' + foodType + '</td>'
+									+ '<td>' + productName + getSizeToDisplay(size) + '</td>'
+									+ '<td>' + wholeGrainStatus + '</td>'
+									+ '<td>' + companyName + '</td>'
+									+ '<td>' + distributorCode + '</td>'
+								+ '</tr>';
+
+					tbody.append(htmlRow);
         		});
+
+    			// hack to remove white space for IE
+        		var expr = new RegExp('>[ \t\r\n\v\f]*<', 'g');
+ 				htmlTable.html(htmlTable.html().replace(expr, '><'));
         	}
 
     		// prettify the 'Product Size' info
@@ -154,7 +118,6 @@
 
 			// turn html table into a datatable 
 			function vendingMachinesDataTable(table) {
-
 				table.dataTable({
 					"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>", // specifies location of datatable controls
 					"sPaginationType": "bootstrap",
@@ -164,17 +127,15 @@
 					"sScrollY": "370px",  // max height of results
 					"iDisplayLength": 25, // initial results per page
 					"aLengthMenu": [[25, 50, -1], [25, 50, "All"]], // select options for results per page
-					"aoColumns": [ // columns specific info, like widths, searchability, visibility, etc.
-						{ "sWidth": "15%" },
-						{ "sWidth": "35%" },
-						{ "sWidth": "25%" },
-						{ "sWidth": "25%" },
-				    ]
+				    "aoColumnDefs": [ // columns specific info, like widths, searchability, visibility, etc.
+      					{ "sWidth": "15%", "aTargets": [ 0 ] },
+      					{ "sWidth": "25%", "aTargets": [ 2, 3 ] },
+      					{ "sWidth": "35%", "aTargets": [ 1 ] }
+    				]
 				});	
 			}
 
 			function wholeGrainsDataTable(table) {
-
 				table.dataTable({
 					"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>", // specifies location of datatable controls
 					"sPaginationType": "bootstrap",
@@ -184,13 +145,11 @@
 					"sScrollY": "370px",  // max height of results
 					"iDisplayLength": 25, // initial results per page
 					"aLengthMenu": [[25, 50, -1], [25, 50, "All"]], // select options for results per page 
-					"aoColumns": [ // columns specific info, like widths, searchability, visibility, etc.
-						{ "sWidth": "15%" },
-						{ "sWidth": "30%" },
-						{ "sWidth": "15%" },
-						{ "sWidth": "20%" },
-						{ "sWidth": "20%" },
-				    ]
+				    "aoColumnDefs": [ // columns specific info, like widths, searchability, visibility, etc.
+      					{ "sWidth": "15%", "aTargets": [ 0, 2 ] },
+      					{ "sWidth": "20%", "aTargets": [ 3, 4 ] },
+      					{ "sWidth": "30%", "aTargets": [ 1 ] }
+    				]
 				});	
 			}
 
@@ -201,14 +160,29 @@
         	<div class="row list-row">
         		<h3>Vending Machines</h3>
 	        	<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="vendingMachinesDt">
-					<thead></thead>
+					<thead>
+						<tr>
+							<th>Food Type</th>
+							<th>Product Name</th>
+							<th>Company Name</th>
+							<th>Distributor Code</th>
+						</tr>
+					</thead>
 					<tbody></tbody>
 				</table>
 			</div>
         	<div class="row list-row">
         		<h3>Whole Grains</h3>
 	        	<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="wholeGrainsDt">
-					<thead></thead>
+					<thead>
+						<tr>
+							<th>Food Type</th>
+							<th>Product Name</th>
+							<th>Status</th>
+							<th>Company Name</th>
+							<th>Distributor Code</th>
+						</tr>
+					</thead>
 					<tbody></tbody>
 				</table>
 			</div>
