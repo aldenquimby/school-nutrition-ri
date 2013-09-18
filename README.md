@@ -1,12 +1,13 @@
-school-nutrition-ri
-===================
+# Rhode Island School Nutrition
 
-Improved user interface for the lists of products that schools in Rhode Island are allowed to buy, based on Rhode Island Department of Health nutrition guidelines.
+Improved user interface for the lists of products that schools in Rhode Island are allowed to buy, 
+based on Rhode Island Department of Health nutrition guidelines, 
+which can be found <a href="http://www.health.ri.gov/healthyweight/for/schools/">here</a>.
 
-Uses DataTables and Twitter Bootstrap to make prettier searchable tables.
-Pulls information from the publicly available lists on Google:
-https://docs.google.com/spreadsheet/ccc?key=0AhgeWcbPrqvOdGgxbkJYdUVRVkJHSHFQNlVkUnJrN2c
+### Tech
+Uses <a href="http://www.datatables.net/blog/Twitter_Bootstrap_2">DataTables</a> together with 
+<a href="http://datatables.net/release-datatables/extras/TableTools/bootstrap.html">Twitter Bootstrap</a> 
+to make prettier searchable tables.
 
-References:
-http://datatables.net/release-datatables/extras/TableTools/bootstrap.html
-http://www.datatables.net/blog/Twitter_Bootstrap_2
+### Data Source
+Pulls information from the publicly available lists on <a href="https://docs.google.com/spreadsheet/ccc?key=0AhgeWcbPrqvOdGgxbkJYdUVRVkJHSHFQNlVkUnJrN2c">Google</a>.
